@@ -6,6 +6,7 @@ import javax.swing.border.EmptyBorder;
 
 class MainPage extends JFrame
 {
+	
     static JButton b1;
 	static JButton b2;
 	static JTextArea area;
@@ -17,53 +18,20 @@ class MainPage extends JFrame
     private static String[] designations;
     private static int diffObjs;
     private static int itemDiv;
-  //add JPanel to the contentPane
-  		private JPanel contentPane;
-  		//declare variable
-  		private JTextField txtDate; 
+    private static JButton dtBtn;
+    private static JPanel contentPane;
+    private static ArrayList<JPanel> dtPanels;
+    private static ArrayList<JButton> dtBtns;
+  		private static JTextField txtDate; 
   		
     MainPage()
     {
-    			//create new JPanel in contentPane
-    			contentPane = new JPanel();
-    			//set border of frame
-    			contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-    			//set contentPane 
-    			setContentPane(contentPane);
-    			//set layout null
-    			contentPane.setLayout(null);
-    			
-    			//create text field
-    			txtDate = new JTextField();
-    			//set bounds of text field
-    			txtDate.setBounds(101, 107, 86, 20);
-    			//add text field to contentPane
-    			contentPane.add(txtDate);
-    			//set columns
-    			txtDate.setColumns(10);
-    			
-    			//create button and there object
-    			JButton dtBtn = new JButton("...");
-    			//perform action listener
-    			dtBtn.addActionListener(new ActionListener() 
-    			{	
-    				//performed action
-    				public void actionPerformed(ActionEvent arg0) 
-    				{
-    					//create frame new object  f
-    					final JFrame f = new JFrame();
-    					//set text which is collected by date picker i.e. set date 
-    					txtDate.setText(new DatePicker(f).setPickedDate());
-    				}
-    			});
-    			//set button bound
-    			dtBtn.setBounds(223, 106, 50, 23);
-    			//add button in contentPane
-    			contentPane.add(dtBtn);
-    			
+    	
     	area=new JTextArea();
     	details = new ArrayList<JLabel>();
     	fields = new ArrayList<Object>();
+    	dtPanels = new ArrayList<JPanel>();
+    	dtBtns = new ArrayList<JButton>();
     	itemDiv= 9;
     	diffObjs =3;
     	designations = new String[]{"Select","Software Engineer","Senior Software Engineer","Consultant","Senior Consultant","Manager","Senior Manager"};
@@ -116,7 +84,12 @@ class MainPage extends JFrame
         	if(i<=itemDiv) {
                 ((JTextField)fields.get(i)).setBounds(250,140+(40*i),90,20);
                 }else {
-                ((JTextField)fields.get(i)).setBounds(600,140+(40*(i-10)),90,20);
+                	((JTextField)fields.get(i)).setBounds(600,140+(40*(i-10)),90,20);
+                	if(i>=11&&i<=14) {
+                		dtBtns.add(new JButton("..."));
+                  		dtBtns.get(i-11).setBounds(700,140+(40*(i-10)),50,25);
+                  		this.add(dtBtns.get(i-11));
+                	}
                 }
         }
 
@@ -130,7 +103,6 @@ class MainPage extends JFrame
         this.add(area); 	
         details.get(17).setBounds(420,440,75,60);
         area.setBounds(510,460,180,100);
- 
     }
     
     public static void main(String args[])
@@ -146,16 +118,21 @@ class MainPage extends JFrame
         	  }
         });
         b2.addActionListener(new ActionListener(){  
-            public void actionPerformed(ActionEvent e){  
+            public void actionPerformed(ActionEvent e){ 
             	System.exit(0);
                 }  
         });
         b1.addActionListener(new ActionListener(){  
             public void actionPerformed(ActionEvent e){  
             	for(int i=0;i<17;i++) {
-            		
+            		validate(i);
             		if(fields.get(i) instanceof JTextField) {
-            		System.out.println(((JTextField)fields.get(i)).getText());
+            			if ( ((JTextField)fields.get(i)).getText().trim().length() == 0 ) {
+            			JOptionPane.showMessageDialog(new JFrame(), "Make sure all inputs are complete!",
+                                "Incorrect Submission", JOptionPane.ERROR_MESSAGE);
+            				break;
+            			}
+            				System.out.println(((JTextField)fields.get(i)).getText());
             		}
             		if(fields.get(i) instanceof JComboBox) {
             			if(i%2==1) {
@@ -168,7 +145,66 @@ class MainPage extends JFrame
             	System.out.println(area.getText());
             }  
         }); 
-
+        dtBtns.get(0).addActionListener(new ActionListener() 
+		{	
+			//performed action
+			public void actionPerformed(ActionEvent e) 
+			{
+				dtAction(11);
+			}
+		});
+        dtBtns.get(1).addActionListener(new ActionListener() 
+		{	
+			//performed action
+			public void actionPerformed(ActionEvent e) 
+			{
+				dtAction(12);
+			}
+		});
+        dtBtns.get(2).addActionListener(new ActionListener() 
+		{	
+			//performed action
+			public void actionPerformed(ActionEvent e) 
+			{
+				dtAction(13);
+			}
+		});
+        dtBtns.get(3).addActionListener(new ActionListener() 
+		{	
+			//performed action
+			public void actionPerformed(ActionEvent e) 
+			{
+				dtAction(14);
+			}
+		});
         
+    }
+    
+    public static void dtAction(int i) {
+    	//create frame new object  f
+		final JFrame f = new JFrame();
+		//set text which is collected by date picker i.e. set date 
+		((JTextField) fields.get(i)).setText(new DatePicker(f).setPickedDate());
+    }
+    
+    public static void validate(int i) {
+    	if((i==0||i==4||i==5)&&((JTextField)fields.get(i)).getText().trim().length() != 0) {
+    		try {
+                int j = Integer.parseInt(((JTextField)fields.get(i)).getText());   //This was a string coming from a resultset that I changed into and Int
+                ((JTextField)fields.get(i)).requestFocusInWindow();
+                } catch (Exception z) { 
+                    JOptionPane.showMessageDialog(new JFrame(), "Please input only numbers in "+(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!",
+                       "Incorrect Input", JOptionPane.ERROR_MESSAGE);
+                    ((JTextField)fields.get(i)).setText("");
+                    ((JTextField)fields.get(i)).requestFocusInWindow();
+                    return;
+           }
+    	}
+    	if((i==6||i==7||i==8)&&(((JTextField)fields.get(i)).getText().trim().length() != 0)) {
+    		if(!((JTextField)fields.get(i)).getText().trim().contains("@")||!((JTextField)fields.get(i)).getText().trim().contains(".")) {
+    			JOptionPane.showMessageDialog(new JFrame(), "Please input a proper email address in " +(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!",
+                        "Incorrect Input", JOptionPane.ERROR_MESSAGE);
+    		}
+    	}
     }
 }
