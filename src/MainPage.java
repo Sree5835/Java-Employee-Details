@@ -21,7 +21,6 @@ class MainPage extends JFrame
   		
     MainPage()
     {
-    	
     	area=new JTextArea();
     	details = new ArrayList<JLabel>();
     	fields = new ArrayList<Object>();
@@ -121,6 +120,8 @@ class MainPage extends JFrame
             	for(int i=0;i<17;i++) {
             		validate(i);
             		if(fields.get(i) instanceof JTextField) {
+            			
+            			//uncomment if all fields need to mandatory
 //            			if ( ((JTextField)fields.get(i)).getText().trim().length() == 0 ) {
 //            			JOptionPane.showMessageDialog(new JFrame(), "Make sure all inputs are complete!",
 //                                "Incorrect Submission", JOptionPane.ERROR_MESSAGE);
