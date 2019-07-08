@@ -20,8 +20,7 @@ class MainPage extends JFrame
     private static ArrayList<JButton> dtBtns;
   		
     MainPage()
-    {
-    	
+    {	
     	area=new JTextArea();
     	details = new ArrayList<JLabel>();
     	fields = new ArrayList<Object>();
