@@ -18,8 +18,8 @@ class MainPage extends JFrame
     private static String[] designations;
     private static int diffObjs;
     private static int itemDiv;
-    private static JButton dtBtn;
-    private static JPanel contentPane;
+//    private static JButton dtBtn;
+//    private static JPanel contentPane;
     private static ArrayList<JPanel> dtPanels;
     private static ArrayList<JButton> dtBtns;
   		private static JTextField txtDate; 
