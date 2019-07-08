@@ -2,7 +2,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 
 class MainPage extends JFrame
 {
@@ -18,11 +17,7 @@ class MainPage extends JFrame
     private static String[] designations;
     private static int diffObjs;
     private static int itemDiv;
-//    private static JButton dtBtn;
-//    private static JPanel contentPane;
-    private static ArrayList<JPanel> dtPanels;
     private static ArrayList<JButton> dtBtns;
-  		private static JTextField txtDate; 
   		
     MainPage()
     {
@@ -30,7 +25,6 @@ class MainPage extends JFrame
     	area=new JTextArea();
     	details = new ArrayList<JLabel>();
     	fields = new ArrayList<Object>();
-    	dtPanels = new ArrayList<JPanel>();
     	dtBtns = new ArrayList<JButton>();
     	itemDiv= 9;
     	diffObjs =3;
@@ -127,11 +121,11 @@ class MainPage extends JFrame
             	for(int i=0;i<17;i++) {
             		validate(i);
             		if(fields.get(i) instanceof JTextField) {
-            			if ( ((JTextField)fields.get(i)).getText().trim().length() == 0 ) {
-            			JOptionPane.showMessageDialog(new JFrame(), "Make sure all inputs are complete!",
-                                "Incorrect Submission", JOptionPane.ERROR_MESSAGE);
-            				break;
-            			}
+//            			if ( ((JTextField)fields.get(i)).getText().trim().length() == 0 ) {
+//            			JOptionPane.showMessageDialog(new JFrame(), "Make sure all inputs are complete!",
+//                                "Incorrect Submission", JOptionPane.ERROR_MESSAGE);
+//            				break;
+//            			}
             				System.out.println(((JTextField)fields.get(i)).getText());
             		}
             		if(fields.get(i) instanceof JComboBox) {
@@ -181,20 +175,19 @@ class MainPage extends JFrame
     }
     
     public static void dtAction(int i) {
-    	//create frame new object  f
 		final JFrame f = new JFrame();
-		//set text which is collected by date picker i.e. set date 
 		((JTextField) fields.get(i)).setText(new DatePicker(f).setPickedDate());
     }
     
     public static void validate(int i) {
     	if((i==0||i==4||i==5)&&((JTextField)fields.get(i)).getText().trim().length() != 0) {
     		try {
-                int j = Integer.parseInt(((JTextField)fields.get(i)).getText());   //This was a string coming from a resultset that I changed into and Int
-                ((JTextField)fields.get(i)).requestFocusInWindow();
+    			//DO NOT REMOVE THIS int J portion!!!!!
+                int j = Integer.parseInt(((JTextField)fields.get(i)).getText());   //This was a string coming from a result that I changed into and Int
                 } catch (Exception z) { 
                     JOptionPane.showMessageDialog(new JFrame(), "Please input only numbers in "+(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!",
                        "Incorrect Input", JOptionPane.ERROR_MESSAGE);
+                    ((JTextField)fields.get(i)).setText("");
                     ((JTextField)fields.get(i)).setText("");
                     ((JTextField)fields.get(i)).requestFocusInWindow();
                     return;
@@ -204,6 +197,9 @@ class MainPage extends JFrame
     		if(!((JTextField)fields.get(i)).getText().trim().contains("@")||!((JTextField)fields.get(i)).getText().trim().contains(".")) {
     			JOptionPane.showMessageDialog(new JFrame(), "Please input a proper email address in " +(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!",
                         "Incorrect Input", JOptionPane.ERROR_MESSAGE);
+    			((JTextField)fields.get(i)).setText("");
+                ((JTextField)fields.get(i)).requestFocusInWindow();
+                return;
     		}
     	}
     }
