@@ -21,6 +21,7 @@ class MainPage extends JFrame
   		
     MainPage()
     {
+    	
     	area=new JTextArea();
     	details = new ArrayList<JLabel>();
     	fields = new ArrayList<Object>();
