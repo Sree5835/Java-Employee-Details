@@ -5,19 +5,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
+
 import javax.swing.*;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -28,8 +22,6 @@ class MainPage extends JFrame
     static JButton b1;
 	static JButton b2;
 	static JTextArea area;
-	//JLabel[] details = new JLabel[18];
-	//static JTextField[] fields = new JTextField[18];
 	private static ArrayList<JLabel> details;
     private static ArrayList<Object> fields;
     private static String[] bloodGroups;
@@ -38,15 +30,7 @@ class MainPage extends JFrame
     private static int itemDiv;
     private static ArrayList<JButton> dtBtns;
     private static ArrayList<String> columns;
-	private static FileInputStream fis;
-	private static FileOutputStream fileOut;
-	private static XSSFWorkbook wb;
-	private static XSSFSheet sh;
-	private static XSSFCell cell;
-	private static XSSFRow row;
-	private static XSSFCellStyle cellstyle;
-	private static XSSFColor mycolor;
-	private static String path;
+    private static boolean neverLoaded;
   		
     MainPage()
     {	
@@ -57,6 +41,7 @@ class MainPage extends JFrame
     	columns = new ArrayList<String>();
     	itemDiv= 9;
     	diffObjs =3;
+    	neverLoaded=true;
     	designations = new String[]{"Select","Software Engineer","Senior Software Engineer","Consultant","Senior Consultant","Manager","Senior Manager"};
     	bloodGroups = new String[]{"Select","A+","O+","B+","AB+","A-","O-","B-","AB-"};
         setLayout(new FlowLayout());
@@ -146,33 +131,40 @@ class MainPage extends JFrame
                 }  
         });
         b1.addActionListener(new ActionListener(){  
-            public void actionPerformed(ActionEvent e){  
-            	for(int i=0;i<17;i++) {
-            		validate(i);
-            		if(fields.get(i) instanceof JTextField) {
-            			
-            			//uncomment if all fields need to mandatory
-            			
-//            			if ( ((JTextField)fields.get(i)).getText().trim().length() == 0 ) {
-//            			JOptionPane.showMessageDialog(new JFrame(), "Make sure all inputs are complete!",
-//                                "Incorrect Submission", JOptionPane.ERROR_MESSAGE);
-//            				break;
-//            			}
-            				//System.out.println(((JTextField)fields.get(i)).getText());
-            				columns.add(((JTextField)fields.get(i)).getText());
-            		}
-            		if(fields.get(i) instanceof JComboBox) {
-            			if(i%2==1) {
-            				//System.out.println(designations[((JComboBox)fields.get(i)).getSelectedIndex()]);
-            				columns.add(designations[((JComboBox)fields.get(i)).getSelectedIndex()]);
-            			}else {
-            				//System.out.println(bloodGroups[((JComboBox)fields.get(i)).getSelectedIndex()]);	
-            				columns.add(bloodGroups[((JComboBox)fields.get(i)).getSelectedIndex()]);
-            			}
-            		}
+            public void actionPerformed(ActionEvent e){
+            	if(neverLoaded) {
+	            	for(int i=0;i<17;i++) {
+	            		validate(i);
+	            		if(fields.get(i) instanceof JTextField) {
+	            			
+	            			//uncomment if all fields need to mandatory
+	            			
+	//            			if ( ((JTextField)fields.get(i)).getText().trim().length() == 0 ) {
+	//            			JOptionPane.showMessageDialog(new JFrame(), "Make sure all inputs are complete!",
+	//                                "Incorrect Submission", JOptionPane.ERROR_MESSAGE);
+	//            				break;
+	//            			}
+	            				//System.out.println(((JTextField)fields.get(i)).getText());
+	            				columns.add(((JTextField)fields.get(i)).getText());
+	            				((JTextField)fields.get(i)).setText("");
+	            		}
+	            		if(fields.get(i) instanceof JComboBox) {
+	            			if(i%2==1) {
+	            				//System.out.println(designations[((JComboBox)fields.get(i)).getSelectedIndex()]);
+	            				columns.add(designations[((JComboBox)fields.get(i)).getSelectedIndex()]);
+	            			}else {
+	            				//System.out.println(bloodGroups[((JComboBox)fields.get(i)).getSelectedIndex()]);	
+	            				columns.add(bloodGroups[((JComboBox)fields.get(i)).getSelectedIndex()]);
+	            				((JComboBox)fields.get(i)).setSelectedIndex(0);
+	            			}
+	            			((JComboBox)fields.get(i)).setSelectedIndex(0);
+	            		}
+	            	}
+	            	//System.out.println(area.getText());
+	            	columns.add(area.getText());
+	            	area.setText("");
+	            	neverLoaded=false;
             	}
-            	//System.out.println(area.getText());
-            	columns.add(area.getText());
             	try {
 					updateDB();
 				} catch (InvalidFormatException e1) {
@@ -248,66 +240,30 @@ class MainPage extends JFrame
     	}
     }
     private static void updateDB() throws InvalidFormatException, IOException {
-    	 try {
-			setExcelFile("Machint_Employee_Details.xlsx",null);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}   
-    	 
-    	 try {
-			setCellData("hello world", 0,0);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+    	String excelFileName = "Machint_Employee_Details.xlsx";//name of excel file
+		String sheetName = "Main";//name of sheet
+		Workbook wb = new XSSFWorkbook(new FileInputStream(excelFileName));
+		XSSFSheet sheet = (XSSFSheet) wb.getSheet(sheetName);
+		int rowNum=0;
+		Iterator rows = sheet.rowIterator();
+		while (rows.hasNext())
+		{
+			rows.next();
+			rowNum++;
 		}
-    	 
-        
+		XSSFRow row = sheet.createRow(rowNum);
+        // Creating cells
+        for(int i = 0; i < columns.size(); i++) {
+        	XSSFCell cell = row.createCell(i);
+            cell.setCellValue(columns.get(i));
+            //cell.setCellStyle(headerCellStyle);
+        }
+
+		FileOutputStream fileOut = new FileOutputStream(excelFileName);
+
+		//write this workbook to an Outputstream.
+		wb.write(fileOut);
+		fileOut.flush();
+		fileOut.close();
     }
-    
-    public static void setExcelFile(String ExcelPath,String SheetName) throws Exception
-	 {  
-	    try{
-	       File f = new File(ExcelPath);
-	       path = ExcelPath;
-	       if(!f.exists())
-	       {
-	          f.createNewFile();
-	          System.out.println("File doesn't exist, so created!");
-	        }  
-	        fis=new FileInputStream(ExcelPath);
-	        wb=new XSSFWorkbook(fis);
-	        sh = wb.getSheet(SheetName);
-	        //sh = wb.getSheetAt(0); //0 - index of 1st sheet
-	        if (sh == null)
-	        {
-	            sh = wb.createSheet("First Sheet");
-	        }  
-	     }catch (Exception e){System.out.println(e.getMessage());}
-	 }
-	 
-	 public static void setCellData(String text, int rownum, int colnum) throws Exception
-	 {
-	  //try{   
-	     row  = sh.getRow(rownum);
-	     if(row ==null)
-	     {
-	        row = sh.createRow(rownum);
-	     }
-	     cell = row.getCell(colnum);
-	    if (cell != null) 
-	     {
-	         cell.setCellValue(text);
-	     } 
-	     else 
-	     {
-	          cell = row.createCell(colnum);
-	          cell.setCellValue(text);  
-	     }
-	     fileOut = new FileOutputStream(path);
-	     wb.write(fileOut);
-	     fileOut.flush();
-	     fileOut.close();
-	  }
-	  //catch(Exception e){throw (e);} }
 }
