@@ -31,9 +31,15 @@ class MainPage extends JFrame
     private static ArrayList<JButton> dtBtns;
     private static ArrayList<String> columns;
     private static boolean neverLoaded;
+    private static JLabel submissionStatus;
+    private static boolean alright;
   		
     MainPage()
-    {	
+    {	submissionStatus = new JLabel("Submission was successful!");
+    	submissionStatus.setBounds(280,630,300,50);
+    	submissionStatus.setFont(new Font("TimesRoman",Font.TRUETYPE_FONT,20));
+    	this.add(submissionStatus);
+    	submissionStatus.setVisible(false);
     	area=new JTextArea();
     	details = new ArrayList<JLabel>();
     	fields = new ArrayList<Object>();
@@ -42,6 +48,7 @@ class MainPage extends JFrame
     	itemDiv= 9;
     	diffObjs =3;
     	neverLoaded=true;
+    	alright=false;
     	designations = new String[]{"Select","Software Engineer","Senior Software Engineer","Consultant","Senior Consultant","Manager","Senior Manager"};
     	bloodGroups = new String[]{"Select","A+","O+","B+","AB+","A-","O-","B-","AB-"};
         setLayout(new FlowLayout());
@@ -50,19 +57,19 @@ class MainPage extends JFrame
         this.add(title);
         title.setBounds(120, 20, 600, 100);
         title.setFont(new Font("TimesRoman",Font.TRUETYPE_FONT,60));
-        details.add(new JLabel("Employee ID:",JLabel.LEFT));
-        details.add(new JLabel("Resource Name:",JLabel.LEFT));
+        details.add(new JLabel("Employee ID*:",JLabel.LEFT));
+        details.add(new JLabel("Resource Name*:",JLabel.LEFT));
         details.add(new JLabel("Client Name:",JLabel.LEFT));
         details.add(new JLabel("Reporting Manager:",JLabel.LEFT));
-        details.add(new JLabel("Mobile 1:",JLabel.LEFT));
+        details.add(new JLabel("Mobile 1*:",JLabel.LEFT));
         details.add(new JLabel("Mobile 2:",JLabel.LEFT));
-        details.add(new JLabel("Off. Email ID:",JLabel.LEFT));
+        details.add(new JLabel("Off. Email ID*:",JLabel.LEFT));
         details.add(new JLabel("Pers. Email ID:",JLabel.LEFT));
         details.add(new JLabel("Cli. Email ID:",JLabel.LEFT));
         details.add(new JLabel("Work Location:",JLabel.LEFT));
         details.add(new JLabel("Status:",JLabel.LEFT));
-        details.add(new JLabel("D.O. Birth:",JLabel.LEFT));
-        details.add(new JLabel("D.O. Joining:",JLabel.LEFT));
+        details.add(new JLabel("D.O. Birth*:",JLabel.LEFT));
+        details.add(new JLabel("D.O. Joining*:",JLabel.LEFT));
         details.add(new JLabel("D.O. Report To Cli.:",JLabel.LEFT));
         details.add(new JLabel("D.O. Relieving:",JLabel.LEFT));
         details.add(new JLabel("Designation:",JLabel.LEFT));
@@ -115,10 +122,9 @@ class MainPage extends JFrame
     
     public static void main(String args[])
     {
-    	
         MainPage mp=new MainPage();
         mp.setVisible(true);
-        mp.setSize(850,1500);
+        mp.setSize(800,1500);
         mp.setTitle("Employee Details Form");
         mp.addWindowListener(new WindowAdapter(){
         	  public void windowClosing(WindowEvent e){
@@ -130,23 +136,17 @@ class MainPage extends JFrame
             	System.exit(0);
                 }  
         });
-        b1.addActionListener(new ActionListener(){  
-            public void actionPerformed(ActionEvent e){
-            	if(neverLoaded) {
-	            	for(int i=0;i<17;i++) {
-	            		validate(i);
+        b1.addActionListener(new ActionListener(){ 
+			public void actionPerformed(ActionEvent e){
+            	//if(neverLoaded) {
+	            	for(int i=0;i<fields.size();i++) {
+	            		if(validate(i)==false) {
+	            			break;
+	            		}
 	            		if(fields.get(i) instanceof JTextField) {
-	            			
-	            			//uncomment if all fields need to mandatory
-	            			
-	//            			if ( ((JTextField)fields.get(i)).getText().trim().length() == 0 ) {
-	//            			JOptionPane.showMessageDialog(new JFrame(), "Make sure all inputs are complete!",
-	//                                "Incorrect Submission", JOptionPane.ERROR_MESSAGE);
-	//            				break;
-	//            			}
 	            				//System.out.println(((JTextField)fields.get(i)).getText());
 	            				columns.add(((JTextField)fields.get(i)).getText());
-	            				((JTextField)fields.get(i)).setText("");
+	            				//((JTextField)fields.get(i)).setText("");
 	            		}
 	            		if(fields.get(i) instanceof JComboBox) {
 	            			if(i%2==1) {
@@ -155,25 +155,30 @@ class MainPage extends JFrame
 	            			}else {
 	            				//System.out.println(bloodGroups[((JComboBox)fields.get(i)).getSelectedIndex()]);	
 	            				columns.add(bloodGroups[((JComboBox)fields.get(i)).getSelectedIndex()]);
-	            				((JComboBox)fields.get(i)).setSelectedIndex(0);
+	            				//((JComboBox)fields.get(i)).setSelectedIndex(0);
 	            			}
 	            			((JComboBox)fields.get(i)).setSelectedIndex(0);
 	            		}
+	            	
 	            	}
 	            	//System.out.println(area.getText());
 	            	columns.add(area.getText());
-	            	area.setText("");
-	            	neverLoaded=false;
-            	}
+	            	//neverLoaded=false;
+            	//}
+            	if(alright) {
             	try {
 					updateDB();
+					showStatus("Submission was successful!");
+	            	clearAllData();
 				} catch (InvalidFormatException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
-				}
+				}	
+            	}
+            	columns.removeAll(columns);
             }  
         }); 
         dtBtns.get(0).addActionListener(new ActionListener() 
@@ -216,28 +221,53 @@ class MainPage extends JFrame
 		((JTextField) fields.get(i)).setText(new DatePicker(f).setPickedDate());
     }
     
-    public static void validate(int i) {
+    public static boolean validate(int i) {
+    	if((i==0||i==1||i==4||i==6||i==11||i==12)&&((JTextField)fields.get(i)).getText().trim().length() == 0) {
+    		//System.out.println(i);
+    		//showStatus("Please enter proper input in " +(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!");
+    		JOptionPane.showMessageDialog(new JFrame(), "Please enter proper input in " +(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!",
+                    "Incorrect Input", JOptionPane.ERROR_MESSAGE);
+            ((JTextField)fields.get(i)).requestFocusInWindow();
+            return false;
+    	}
     	if((i==0||i==4||i==5)&&((JTextField)fields.get(i)).getText().trim().length() != 0) {
     		try {
     			//DO NOT REMOVE THIS double J portion!!!!!
                 Double j = Double.parseDouble(((JTextField)fields.get(i)).getText());   //This was a string coming from a result that I changed into an Double
                 } catch (Exception z) { 
+                	//showStatus("Please input only numbers in "+(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!");
                     JOptionPane.showMessageDialog(new JFrame(), "Please input only numbers in "+(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!",
                        "Incorrect Input", JOptionPane.ERROR_MESSAGE);
                     ((JTextField)fields.get(i)).setText("");
                     ((JTextField)fields.get(i)).requestFocusInWindow();
-                    return;
+                    return false;
            }
     	}
     	if((i==6||i==7||i==8)&&(((JTextField)fields.get(i)).getText().trim().length() != 0)) {
     		if(!((JTextField)fields.get(i)).getText().trim().contains("@")||!((JTextField)fields.get(i)).getText().trim().contains(".")) {
+    			//showStatus("Please input a proper email address in " +(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!");
     			JOptionPane.showMessageDialog(new JFrame(), "Please input a proper email address in " +(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!",
                         "Incorrect Input", JOptionPane.ERROR_MESSAGE);
     			((JTextField)fields.get(i)).setText("");
                 ((JTextField)fields.get(i)).requestFocusInWindow();
-                return;
+                return false;
     		}
     	}
+    	if((i==11||i==12||i==13||i==14)&&(((JTextField)fields.get(i)).getText().trim().length() != 0)) {
+    		if(!((JTextField)fields.get(i)).getText().trim().contains("-")) {
+    			//showStatus("Please input a proper email address in " +(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!");
+    			JOptionPane.showMessageDialog(new JFrame(), "Please select a proper " +(details.get(i).getText().substring(0,details.get(i).getText().length()-1))+"!",
+                        "Incorrect Input", JOptionPane.ERROR_MESSAGE);
+    			((JTextField)fields.get(i)).setText("");
+                //((JTextField)fields.get(i)).requestFocusInWindow();
+                return false;
+    		}
+    	}
+    	
+    	if(i==fields.size()-1) {
+    		alright=true;
+    	}
+    	return true;
     }
     private static void updateDB() throws InvalidFormatException, IOException {
     	String excelFileName = "Machint_Employee_Details.xlsx";//name of excel file
@@ -265,5 +295,37 @@ class MainPage extends JFrame
 		wb.write(fileOut);
 		fileOut.flush();
 		fileOut.close();
+    }
+    @SuppressWarnings("serial")
+	private static void showStatus(String s) {
+    	submissionStatus.setText(s);
+    	submissionStatus.setVisible(true);
+    	int timerDelay = 350;
+        new Timer(timerDelay , new ActionListener() {
+           int timeLeft = 5;
+
+           @Override
+           public void actionPerformed(ActionEvent e) {
+              if (timeLeft > 0) {
+                 timeLeft--;
+              } else {
+                 ((Timer)e.getSource()).stop();
+                 submissionStatus.setVisible(false);
+              }
+           }
+        }){{setInitialDelay(0);}}.start();
+    }
+    private static void clearAllData() {
+    	for(int i=0;i<fields.size();i++) {
+    		
+    		if(fields.get(i) instanceof JTextField) {
+    				((JTextField)fields.get(i)).setText("");
+    		}
+    		if(fields.get(i) instanceof JComboBox) {
+    			((JComboBox)fields.get(i)).setSelectedIndex(0);
+    		}
+    	
+    	}
+    	area.setText("");
     }
 }
